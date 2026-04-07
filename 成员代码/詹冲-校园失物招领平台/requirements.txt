@@ -1,0 +1,10 @@
+Flask
+Flask-Cors
+Werkzeug
+psycopg2-binary
+openai
+cloudinary
+Flask-Mail
+pytz
+httpx==0.26.0
+gunicorn

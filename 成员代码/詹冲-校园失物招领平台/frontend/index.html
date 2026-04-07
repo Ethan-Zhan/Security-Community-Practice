@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>找到北邮 Found In BUPT</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="bg-gray-50">
+
+    <header class="header">
+        <div class="container mx-auto flex justify-between items-center p-4">
+            <div class="text-2xl font-bold text-white">找到北邮 Found In BUPT</div>
+            <nav class="flex items-center space-x-4">
+                <a href="chat.html" class="text-white font-semibold hover:underline">聊天</a>
+                <button id="publish-btn" class="btn btn-accent">
+                    <i class="fas fa-plus-circle mr-2"></i>发布信息
+                </button>
+                <div class="relative">
+                    <button id="notifications-btn" class="text-white hover:text-gray-200 relative">
+                        <i class="fas fa-bell fa-lg"></i>
+                        <span id="notification-badge" class="notification-badge hidden"></span>
+                    </button>
+                    <div id="notifications-panel" class="notifications-panel hidden"></div>
+                </div>
+                <div id="user-menu" class="relative">
+                    <button id="user-menu-btn" class="flex items-center text-white font-semibold">
+                        <span id="username-display"></span>
+                        <i class="fas fa-chevron-down ml-2"></i>
+                    </button>
+                    <div id="user-menu-dropdown" class="user-menu-dropdown hidden">
+                        <a href="personal.html" class="dropdown-item"><i class="fas fa-user-circle w-6"></i>个人中心</a>
+                        <a href="#" id="change-password-link" class="dropdown-item"><i class="fas fa-key w-6"></i>修改密码</a>
+                        <a href="admin.html" id="admin-link" class="dropdown-item hidden"><i class="fas fa-cogs w-6"></i>管理后台</a>
+                        <a href="volunteer.html" id="volunteer-link" class="dropdown-item hidden"><i class="fas fa-hands-helping w-6"></i>志愿者中心</a>
+                        <a href="#" id="logout-btn" class="dropdown-item"><i class="fas fa-sign-out-alt w-6"></i>退出登录</a>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container mx-auto mt-8 p-4 page-container">
+        <div class="content-grid">
+            <section class="content-panel">
+                <div class="content-panel-header">
+                    <h2 class="section-title">寻物启事 (Lost) 😢</h2>
+                    <div class="filter-container">
+                        <div class="search-bar">
+                             <input type="text" id="search-lost-keyword" class="input-group-input" placeholder="按关键词、地点搜索...">
+                             <button class="btn btn-primary btn-search flex-shrink-0" data-type="Lost"><i class="fas fa-search"></i></button>
+                             <button class="btn btn-secondary flex-shrink-0" onclick="openMapForFilter('Lost')"><i class="fas fa-map-marked-alt"></i> 地图筛选</button>
+                        </div>
+                        <div class="filter-group">
+                            <legend>分类</legend>
+                            <div id="lost-category-filters" class="filter-options"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="item-list-scroll-wrapper">
+                    <div id="lost-items-list" class="item-list"></div>
+                </div>
+            </section>
+
+            <section class="content-panel">
+                <div class="content-panel-header">
+                    <h2 class="section-title">拾物招领 (Found) 😊</h2>
+                     <div class="filter-container">
+                        <div class="search-bar">
+                             <input type="text" id="search-found-keyword" class="input-group-input" placeholder="按关键词、地点搜索...">
+                             <button class="btn btn-primary btn-search flex-shrink-0" data-type="Found"><i class="fas fa-search"></i></button>
+                             <button class="btn btn-secondary flex-shrink-0" onclick="openMapForFilter('Found')"><i class="fas fa-map-marked-alt"></i> 地图筛选</button>
+                        </div>
+                        <div class="filter-group">
+                            <legend>分类</legend>
+                            <div id="found-category-filters" class="filter-options"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="item-list-scroll-wrapper">
+                    <div id="found-items-list" class="item-list"></div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <div id="chat-modal" class="modal-backdrop hidden">
+        <div class="modal-content chat-modal-content">
+            <div id="chat-header" class="chat-header">
+                <h3 id="chat-title">私信对话</h3>
+                <p id="chat-item-desc">正在加载...</p>
+            </div>
+            <div id="chat-messages" class="chat-messages"></div>
+            <form id="chat-form" class="chat-form" enctype="multipart/form-data">
+                <input type="text" id="chat-input" class="input-group-input flex-grow" placeholder="输入消息..." required autocomplete="off">
+                 <label for="chat-image-upload" class="btn btn-secondary chat-upload-trigger cursor-pointer">
+                    <i class="fas fa-image"></i>
+                </label>
+                <input type="file" id="chat-image-upload" name="image" class="hidden" accept="image/*">
+                <button type="submit" class="btn btn-primary">发送</button>
+            </form>
+            <div id="chat-actions" class="mt-4 flex justify-between"></div>
+            <button onclick="closeModal('chat-modal')" class="btn btn-secondary mt-4 w-full">关闭对话</button>
+        </div>
+    </div>
+    <div id="publish-modal" class="modal-backdrop hidden"></div>
+    <div id="change-password-modal" class="modal-backdrop hidden">
+        <div class="modal-content max-w-md">
+            <h3 class="modal-title">修改密码</h3>
+            <form id="change-password-form" class="space-y-4">
+                <div class="input-group">
+                    <label for="oldPassword">原密码</label>
+                    <input type="password" id="oldPassword" name="oldPassword" class="input-group-input" required autocomplete="current-password">
+                </div>
+                <div class="input-group">
+                    <label for="newPassword">新密码</label>
+                    <input type="password" id="newPassword" name="newPassword" class="input-group-input" required autocomplete="new-password">
+                </div>
+                <div class="input-group">
+                    <label for="confirmPassword">确认新密码</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" class="input-group-input" required autocomplete="new-password">
+                </div>
+                <div class="modal-actions flex justify-end gap-4">
+                    <button type="button" class="btn btn-secondary" id="cancel-change-password-btn">取消</button>
+                    <button type="submit" class="btn btn-primary">提交</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div id="claim-modal" class="modal-backdrop hidden"></div>
+    <div id="item-details-modal" class="modal-backdrop hidden"></div>
+
+    <div id="map-modal" class="modal-backdrop hidden">
+        <div class="map-modal-content">
+            <span class="map-modal-close" id="map-close-btn">&times;</span>
+            <img id="campusImg" src="assets/images/campus.png" alt="校园地图" usemap="#campusMap" class="map-modal-image">
+            <map name="campusMap">
+                <area shape="rect" coords="380,127,435,151" href="#" data-building="西土城校区：学十一公寓">
+                <area shape="rect" coords="380,159,415,182" href="#" data-building="西土城校区：学九公寓">
+                <area shape="rect" coords="417,158,436,184" href="#" data-building="西土城校区：教九">
+                <area shape="rect" coords="439,132,497,183" href="#" data-building="西土城校区：学十公寓">
+                <area shape="rect" coords="494,87,527,115" href="#" data-building="西土城校区：北门">
+                <area shape="rect" coords="524,119,579,137" href="#" data-building="西土城校区：快递站">
+                <area shape="rect" coords="521,139,576,165" href="#" data-building="西土城校区：经管楼">
+                <area shape="rect" coords="586,122,638,165" href="#" data-building="西土城校区：学六公寓">
+                <area shape="rect" coords="648,125,764,163" href="#" data-building="西土城校区：家属区">
+                <area shape="rect" coords="779,151,814,196" href="#" data-building="西土城校区：东北门">
+                <area shape="rect" coords="703,180,765,282" href="#" data-building="西土城校区：家属区">
+                <area shape="rect" coords="647,180,698,236" href="#" data-building="西土城校区：科研楼">
+                <area shape="rect" coords="518,184,567,228" href="#" data-building="西土城校区：学生活动中心">
+                <area shape="rect" coords="648,242,695,285" href="#" data-building="西土城校区：学生食堂">
+                <area shape="rect" coords="520,238,640,284" href="#" data-building="西土城校区：麦当劳">
+                <area shape="rect" coords="568,187,637,230" href="#" data-building="西土城校区：学生活动中心商户">
+                <area shape="rect" coords="438,188,499,221" href="#" data-building="西土城校区：综合食堂">
+                <area shape="rect" coords="438,225,498,250" href="#" data-building="西土城校区：学八公寓">
+                <area shape="rect" coords="379,189,436,219" href="#" data-building="西土城校区：留学生公寓">
+                <area shape="rect" coords="379,225,437,250" href="#" data-building="西土城校区：学五公寓">
+                <area shape="rect" coords="378,256,498,286" href="#" data-building="西土城校区：公寓绿地1">
+                <area shape="rect" coords="379,312,499,335" href="#" data-building="西土城校区：公寓绿地2">
+                <area shape="rect" coords="378,289,434,309" href="#" data-building="西土城校区：学三公寓">
+                <area shape="rect" coords="439,291,497,309" href="#" data-building="西土城校区：学四公寓">
+                <area shape="rect" coords="334,188,368,248" href="#" data-building="西土城校区：青年公寓">
+                <area shape="rect" coords="337,256,367,353" href="#" data-building="西土城校区：学十三公寓">
+                <area shape="rect" coords="338,362,367,397" href="#" data-building="西土城校区：通鸿楼">
+                <area shape="rect" coords="341,402,366,423" href="#" data-building="西土城校区：邮局">
+                <area shape="rect" coords="337,433,366,443" href="#" data-building="西土城校区：ATM">
+                <area shape="rect" coords="378,371,499,442" href="#" data-building="西土城校区：教四楼">
+                <area shape="rect" coords="377,455,500,529" href="#" data-building="西土城校区：中心花园">
+                <area shape="rect" coords="377,538,498,599" href="#" data-building="西土城校区：教三楼">
+                <area shape="rect" coords="339,513,368,557" href="#" data-building="西土城校区：停车坪">
+                <area shape="rect" coords="338,565,367,609" href="#" data-building="西土城校区：校车车库">
+                <area shape="rect" coords="285,473,330,527" href="#" data-building="西土城校区：西门">
+                <area shape="rect" coords="337,615,369,748" href="#" data-building="西土城校区：西南家属区1">
+                <area shape="rect" coords="379,673,478,712" href="#" data-building="西土城校区：西南家属区2">
+                <area shape="rect" coords="379,717,517,756" href="#" data-building="西土城校区：西南家属区3">
+                <area shape="rect" coords="379,615,497,636" href="#" data-building="西土城校区：校医院">
+                <area shape="rect" coords="377,649,498,668" href="#" data-building="西土城校区：南区超市">
+                <area shape="rect" coords="542,768,597,796" href="#" data-building="西土城校区：南门">
+                <area shape="rect" coords="517,290,570,320" href="#" data-building="西土城校区：小松林">
+                <area shape="rect" coords="520,330,569,356" href="#" data-building="西土城校区：时光广场">
+                <area shape="rect" coords="578,290,636,355" href="#" data-building="西土城校区：图书馆">
+                <area shape="rect" coords="519,373,554,403" href="#" data-building="西土城校区：财务处">
+                <area shape="rect" coords="558,374,602,421" href="#" data-building="西土城校区：行政办公楼">
+                <area shape="rect" coords="608,373,637,396" href="#" data-building="西土城校区：物业中心">
+                <area shape="rect" coords="521,416,637,451" href="#" data-building="西土城校区：教一楼">
+                <area shape="rect" coords="584,457,638,524" href="#" data-building="西土城校区：主楼">
+                <area shape="rect" coords="522,542,641,599" href="#" data-building="西土城校区：教二楼">
+                <area shape="rect" coords="650,245,693,280" href="#" data-building="西土城校区：学生食堂">
+                <area shape="rect" coords="651,290,686,355" href="#" data-building="西土城校区：篮球场">
+                <area shape="rect" coords="686,291,720,352" href="#" data-building="西土城校区：网球场排球场">
+                <area shape="rect" coords="736,293,760,353" href="#" data-building="西土城校区：学二十九公寓">
+                <area shape="rect" coords="653,375,738,438" href="#" data-building="西土城校区：体育馆">
+                <area shape="rect" coords="746,379,765,438" href="#" data-building="西土城校区：游泳馆">
+                <area shape="rect" coords="649,464,705,514" href="#" data-building="西土城校区：科学会堂">
+                <area shape="rect" coords="772,336,820,401" href="#" data-building="西土城校区：东门">
+                <area shape="rect" coords="722,463,760,611" href="#" data-building="西土城校区：体育场">
+                <area shape="rect" coords="650,541,706,601" href="#" data-building="西土城校区：可信网络通信协议创新中心">
+                <area shape="rect" coords="517,616,555,640" href="#" data-building="西土城校区：南邮局">
+                <area shape="rect" coords="555,616,761,637" href="#" data-building="西土城校区：东南家属区1">
+                <area shape="rect" coords="736,641,760,694" href="#" data-building="西土城校区：东南家属区2">
+                <area shape="rect" coords="532,647,654,668" href="#" data-building="西土城校区：全民健身">
+                <area shape="rect" coords="664,651,719,715" href="#" data-building="西土城校区：北邮幼儿园">
+                <area shape="rect" coords="532,671,653,712" href="#" data-building="西土城校区：东南家属区3">
+                <area shape="rect" coords="577,724,638,751" href="#" data-building="西土城校区：东南家属区4">
+                <area shape="rect" coords="726,707,771,761" href="#" data-building="西土城校区：明光楼">
+                <area shape="rect" coords="1291,96,1368,170" href="#" data-building="沙河校区：快递驿站">
+                <area shape="rect" coords="1252,58,1312,93" href="#" data-building="沙河校区：西门">
+                <area shape="rect" coords="1292,175,1437,241" href="#" data-building="沙河校区：运动场">
+                <area shape="rect" coords="1034,274,1100,337" href="#" data-building="沙河校区：S6宿舍楼">
+                <area shape="rect" coords="1105,274,1133,341" href="#" data-building="沙河校区：S5宿舍楼">
+                <area shape="rect" coords="1136,297,1172,340" href="#" data-building="沙河校区：S4宿舍楼">
+                <area shape="rect" coords="1175,296,1216,344" href="#" data-building="沙河校区：S3宿舍楼">
+                <area shape="rect" coords="1219,295,1246,343" href="#" data-building="沙河校区：S2宿舍楼">
+                <area shape="rect" coords="1210,270,1249,293" href="#" data-building="沙河校区：S1宿舍楼">
+                <area shape="rect" coords="1289,274,1377,342" href="#" data-building="沙河校区：雁北园A B C D1宿舍楼">
+                <area shape="rect" coords="1383,277,1458,340" href="#" data-building="沙河校区：雁北园D2 E宿舍楼">
+                <area shape="rect" coords="1049,359,1114,443" href="#" data-building="沙河校区：南区食堂">
+                <area shape="rect" coords="1121,362,1265,488" href="#" data-building="沙河校区：公共教学楼">
+                <area shape="rect" coords="1316,362,1372,414" href="#" data-building="沙河校区：学生食堂">
+                <area shape="rect" coords="1381,363,1434,415" href="#" data-building="沙河校区：教工食堂">
+                <area shape="rect" coords="1318,438,1373,491" href="#" data-building="沙河校区：学活">
+                <area shape="rect" coords="1382,437,1432,489" href="#" data-building="沙河校区：综合办公楼">
+                <area shape="rect" coords="1442,438,1459,485" href="#" data-building="沙河校区：医务室">
+                <area shape="rect" coords="1295,519,1447,604" href="#" data-building="沙河校区：图书馆">
+                <area shape="rect" coords="1372,606,1441,640" href="#" data-building="沙河校区：东配楼">
+                <area shape="rect" coords="1173,528,1269,634" href="#" data-building="沙河校区：教学实验综合楼">
+                <area shape="rect" coords="1286,666,1372,724" href="#" data-building="沙河校区：数媒楼">
+                <area shape="rect" coords="1308,729,1383,776" href="#" data-building="沙河校区：智工楼">
+                <area shape="rect" coords="1392,670,1459,774" href="#" data-building="沙河校区：网安楼">
+                <area shape="rect" coords="1197,684,1267,760" href="#" data-building="沙河校区：S1教学楼">
+                <area shape="rect" coords="1043,671,1104,771" href="#" data-building="沙河校区：理学院">
+                <area shape="rect" coords="1100,672,1155,769" href="#" data-building="沙河校区：S3工程实验楼">
+                <area shape="rect" coords="1162,680,1195,773" href="#" data-building="沙河校区：S2教学楼 马克思主义学院/人文学院"> </map>
+        
+        </div>
+    </div>
+
+    <div id="toast" class="toast hidden"></div>
+    <script src="assets/js/script.js"></script>
+</body>
+</html>
