@@ -29,7 +29,7 @@ on:
 
 注意：本文件夹内的 signin.yml 仅供作业展示，若需激活自动签到功能，请务必将其副本放置于仓库根目录的 .github/workflows/ 路径下。
 
-## 如何增加新网站 (代码复用)
+## 如何增加新网站
 
 本程序支持复用，若需增加新网站，仅需两步：
 
@@ -38,7 +38,7 @@ on:
 
 ```python
 def sign_in_new_site():
-    # 1. 从 os.environ 获取 Secret
+    # 1. 从os.environ获取Secret
     # 2. 发送请求
     print("新网站签到成功")
 
