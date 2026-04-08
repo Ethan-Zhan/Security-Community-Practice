@@ -1,0 +1,27 @@
+name: signin robot
+
+on:
+  workflow_dispatch: 
+  schedule:
+    - cron: '24 04,06,08,10 * * *'
+
+jobs:
+  run-daily-task:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 1. 下载仓库代码
+        uses: actions/checkout@v3
+
+      - name: 2. 安装 Python 环境
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: 3. 安装依赖库
+        run: pip install requests
+
+      - name: 4. 执行签到脚本
+        env:
+          ALPHAGEN_COOKIE: ${{ secrets.ALPHAGEN_COOKIE }}
+          CREATIVEHUB_AUTH: ${{ secrets.CREATIVEHUB_AUTH }}
+        run: python "成员代码/祝翊恒-daily-checkin/main.py"
