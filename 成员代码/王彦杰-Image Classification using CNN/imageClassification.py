@@ -18,7 +18,7 @@ print("=" * 50)
 #加载与预处理
 print("\n加载并预处理数据...")
 
-#加载数据
+#加载MNIST数据集
 (train_images, train_labels), (test_images, test_labels) = mnist.load_data()
 
 print(f"原始训练集形状: {train_images.shape}")
@@ -27,12 +27,14 @@ print(f"原始测试集形状: {test_images.shape}")
 
 #数据预处理
 #把像素值缩放到 [0, 1]
+# 这样可以加快模型收敛速度，避免数值过大导致训练不稳定
 train_images = train_images.astype('float32') / 255.0
 test_images = test_images.astype('float32') / 255.0
 
 # 维度扩展后维度从 (28, 28) 变为 (28, 28, 1)
-train_images = train_images.reshape((60000, 28, 28, 1))
-test_images = test_images.reshape((10000, 28, 28, 1))
+# 使用自动维度推断，提高代码通用性，如果数据大于原来的设定值，数据规模变化会导致错误
+train_images = train_images.reshape((-1, 28, 28, 1))
+test_images = test_images.reshape((-1, 28, 28, 1))
 print(f"预处理后训练集形状: {train_images.shape}")
 print(f"预处理后测试集形状: {test_images.shape}")
 
@@ -67,6 +69,7 @@ model = Sequential([
     Dense(64, activation='relu'),
 
     # 添加Dropout层防止过拟合
+    # Dropout会在训练时随机丢弃部分神经元，提升模型泛化能力
     Dropout(0.5),
 
     Dense(10, activation='softmax')
@@ -88,7 +91,10 @@ print("模型编译完成")
 #模型训练
 print("\n开始训练模型...")
 
-#跑10个epoch
+# 跑10个epoch
+# WARNING:
+# 训练轮数（epochs）设置较大时可能导致过拟合或训练时间过长
+# 在实际工程中建议结合EarlyStopping策略
 history = model.fit(
     train_images,
     train_labels,
@@ -134,7 +140,7 @@ print("\n评估模型性能...")
 test_loss, test_acc = model.evaluate(test_images, test_labels, verbose=0)
 print(f"测试集准确率: {test_acc:.4f} ({test_acc * 100:.2f}%)")
 
-#获取预测结果
+# 使用模型进行预测（输出为概率分布）
 predictions = model.predict(test_images)
 predicted_labels = np.argmax(predictions, axis=1)
 
