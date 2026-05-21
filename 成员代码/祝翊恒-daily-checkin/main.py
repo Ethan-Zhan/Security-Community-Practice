@@ -3,6 +3,17 @@ import requests
 import time
 import sys
 
+# ================= 配置与常量定义 =================
+# 默认请求头 User-Agent，避免在各签到函数中重复硬编码
+DEFAULT_USER_AGENT = 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Mobile Safari/537.36 Edg/144.0.0.0'
+
+# 原地等待时的额外缓冲时间（秒）
+SLEEP_BUFFER = 5
+
+# 两个签到任务之间的间隔时间（秒），防止请求过于频繁
+TASK_INTERVAL = 2
+# =================================================
+
 def format_time(seconds):
     m, s = divmod(seconds, 60)
     h, m = divmod(m, 60)
@@ -16,7 +27,7 @@ def smart_sleep(delay_seconds):
 
     if delay_seconds < MAX_WAIT:
         print(f"距离签到时间还差 {format_time(delay_seconds)},原地等待")
-        time.sleep(delay_seconds + 5)
+        time.sleep(delay_seconds + SLEEP_BUFFER) # 使用常量替换原先硬编码的 +5
         return True
     else:
         print(f"距离签到时间还很长（{format_time(delay_seconds)}）,本次跳过")
@@ -25,6 +36,7 @@ def smart_sleep(delay_seconds):
 def sign_in_alphagen():
     print("正在执行AlphaGen签到")
 
+    # 安全提示：敏感 Cookie 必须从环境变量读取，切勿硬编码写入此脚本，以防泄露至公共仓库
     alphagen_cookie = os.environ.get("ALPHAGEN_COOKIE", "").strip()
     if not alphagen_cookie:
         print("未在Secrets中找到ALPHAGEN_COOKIE")
@@ -35,7 +47,7 @@ def sign_in_alphagen():
         'content-type': 'application/json',
         'cookie': alphagen_cookie,
         'origin': 'https://alphagen.ai',
-        'user-agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Mobile Safari/537.36 Edg/144.0.0.0',
+        'user-agent': DEFAULT_USER_AGENT, # 使用全局常量
     }
 
     try:
@@ -79,6 +91,7 @@ def sign_in_alphagen():
 def sign_in_creativehub():
     print("正在执行CreativeHub签到")
 
+    # 安全提示：敏感 Auth Token 必须从环境变量读取，切勿硬编码写入此脚本，以防泄露至公共仓库
     auth_token = os.environ.get("CREATIVEHUB_AUTH", "").strip()
     if not auth_token:
         print("未在Secrets中找到 CREATIVEHUB_AUTH")
@@ -88,7 +101,7 @@ def sign_in_creativehub():
         'accept': '*/*',
         'authorization': auth_token,
         'origin': 'https://creativehub.ai',
-        'user-agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Mobile Safari/537.36 Edg/144.0.0.0',
+        'user-agent': DEFAULT_USER_AGENT, # 使用全局常量
     }
 
     try:
@@ -106,5 +119,5 @@ def sign_in_creativehub():
 
 if __name__ == "__main__":
     sign_in_alphagen()
-    time.sleep(2)
+    time.sleep(TASK_INTERVAL) # 使用常量替换原先硬编码的 2 秒延迟
     sign_in_creativehub()
