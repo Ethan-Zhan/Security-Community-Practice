@@ -263,6 +263,8 @@ if __name__ == "__main__":
     with app.app_context():
         db.create_all()
 
+    # 生产环境不要开启 debug
+    # nosec B104: 本地测试需绑定0.0.0.0便于组内演示，生产环境应改为127.0.0.1
     app.run(
         host="0.0.0.0",
         port=5000,
