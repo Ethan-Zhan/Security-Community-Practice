@@ -1,8 +1,5 @@
 package Solution42;
 
-import java.util.PriorityQueue;
-import java.util.TreeSet;
-
 class Solution {
     public int trap(int[] height) {
         int[] left = new int[height.length];
