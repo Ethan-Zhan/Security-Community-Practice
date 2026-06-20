@@ -41,16 +41,24 @@ LOGIN_URL = '/auth/feishu/redirect'
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
-# 由于仅是测试项目 所以设为默认key 如需进入生产环境务必改为环境变量key
-JWT_KEY = env.str("JWT_KEY", "DEFAULT_JWT_KEY")
+# 生产部署必须通过环境变量提供密钥，避免把真实密钥提交到仓库。
+JWT_KEY = env.str("JWT_KEY", "CHANGE_ME_IN_ENV")
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure--aio!pbm5!y#@h42)-$2ka#jdzzku-22423y@ge88o=&13izm_"
+SECRET_KEY = env.str("DJANGO_SECRET_KEY", "django-insecure-change-me-in-env")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.bool("DJANGO_DEBUG", False)
 
-ALLOWED_HOSTS = ['10.117.251.67']
+ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["127.0.0.1", "localhost", "10.117.251.67"])
+CSRF_TRUSTED_ORIGINS = env.list("DJANGO_CSRF_TRUSTED_ORIGINS", default=[])
+TRUSTED_PROXY_IPS = env.list("TRUSTED_PROXY_IPS", default=[])
+
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = True
+X_FRAME_OPTIONS = "DENY"
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_REFERRER_POLICY = "same-origin"
 
 
 # Application definition

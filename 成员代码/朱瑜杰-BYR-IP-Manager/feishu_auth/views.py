@@ -1,8 +1,8 @@
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import redirect
 from django.conf import settings
 from utils.feishu_token import call_app_access_token, call_user_access_token, get_user_info
+from utils.security import server_error_response
 import urllib.parse
 from .forms import UserInfoForm
 from .models import UserInfo
@@ -11,7 +11,6 @@ from django.contrib.auth.decorators import login_required
 import uuid
 
 
-@csrf_exempt
 def feishu_redirect(request):
     try:
         if request.method == 'GET':
@@ -28,10 +27,9 @@ def feishu_redirect(request):
         else:
             return JsonResponse({"msg": "Method not allowed"}, status=405)
     except Exception as e:
-        return JsonResponse({"msg": str(e)}, status=500)
+        return server_error_response(e, "feishu_redirect")
 
 
-@csrf_exempt
 def callback(request):
     try:
         if request.method == 'GET':
@@ -55,13 +53,14 @@ def callback(request):
                                 user_info_form = UserInfoForm(user_info)
 
                             if user_info_form.is_valid():
-                                user_info_form.save()
+                                user_info_instance = user_info_form.save()
                                 login(request, user_info_instance)
+                                request.session.pop('oauth_state', None)
                             else:
                                 return JsonResponse({"msg": "Invalid user info"}, status=400)
                         return JsonResponse({"message": "Login successful",
                                              "user_info": user_info,
-                                             "user_access_token": user_access_token})
+                                             })
                     else:
                         return JsonResponse({"msg": "Invalid user access token"}, status=400)
                 else:
@@ -71,17 +70,16 @@ def callback(request):
         else:
             return JsonResponse({"msg": "Method not allowed"}, status=405)
     except Exception as e:
-        return JsonResponse({"msg": str(e)}, status=500)
+        return server_error_response(e, "feishu_callback")
 
 
 @login_required
-@csrf_exempt
 def feishu_logout(request):
     try:
-        if request.method == 'GET':
+        if request.method == 'POST':
             logout(request)
             return JsonResponse({"message": "Logout successful"})
         else:
             return JsonResponse({"msg": "Method not allowed"}, status=405)
     except Exception as e:
-        return JsonResponse({"msg": str(e)}, status=500)
+        return server_error_response(e, "feishu_logout")
