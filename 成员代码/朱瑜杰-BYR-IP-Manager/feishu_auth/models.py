@@ -60,7 +60,7 @@ class UserInfo(AbstractBaseUser, PermissionsMixin):
         return self.name
 
     def has_perm(self, perm, obj=None):
-        return True
+        return self.is_staff
 
     def has_module_perms(self, app_label):
-        return True
+        return self.is_staff

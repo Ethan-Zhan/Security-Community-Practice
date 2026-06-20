@@ -12,7 +12,6 @@ click-plugins==1.1.1
 click-repl==0.3.0
 colorama==0.4.6
 cryptography==43.0.1
-demjson3==3.0.6
 Django==5.1.1
 django-crontab==0.7.1
 django-environ==0.11.2

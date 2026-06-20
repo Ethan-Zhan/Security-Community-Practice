@@ -3,9 +3,7 @@ from bind.models import BindInfo
 import time
 import threading
 import queue
-import http.client
-import json
-import subprocess
+import requests
 from utils.exception.exception import (
     InvalidException
 )
@@ -13,9 +11,13 @@ from utils.exception.exception import (
 
 def login_yxms(username, user_ip, result_queue):
     time.sleep(3)
-    command = f'jo username={username} ip={user_ip} | curl -s http://localhost/api/login -d "@-" | jq'
-    result = subprocess.run(command, shell=True, capture_output=True, text=True, check=True)
-    output_str = json.loads(result.stdout)
+    response = requests.post(
+        "http://localhost/api/login",
+        json={"username": username, "ip": user_ip},
+        timeout=5,
+    )
+    response.raise_for_status()
+    output_str = response.json()
     user_info_instance = UserInfo.objects.filter(name=username).first()
     bind_info_instance = BindInfo.objects.filter(user=user_info_instance, ip=user_ip).first()
     if not bind_info_instance:

@@ -10,4 +10,4 @@ class BindInfo(models.Model):
     logged_in = models.BooleanField(default=False)
 
     class Meta:
-        unique_together = ('user', 'device_id', 'logged_in')
+        unique_together = (('user', 'device_id'), ('user', 'ip'))

@@ -67,7 +67,10 @@ def bind_token_pass(header: dict) -> string:
         raise OutdatedException()
 
     if info["exp"] - timezone.now().timestamp() <= 86400:
-        new_token = bind_token_generate(BindInfo.objects.get(user__open_id=info["openid"], ip=info["ip"]))
+        bind_info = BindInfo.objects.filter(user__open_id=info["open_id"], ip=info["ip"]).first()
+        if not bind_info:
+            raise InvalidException()
+        new_token = bind_token_generate(bind_info)
         return new_token
 
     return token
