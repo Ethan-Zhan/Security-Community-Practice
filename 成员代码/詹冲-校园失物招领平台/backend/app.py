@@ -1217,34 +1217,50 @@ def volunteer_link_items():
     志愿者人工匹配接口。
     接收志愿者ID、失物ID和拾物ID，执行物品关联操作。
     """
-    data = request.json
-    operator_id = data.get('operatorID') or data.get('volunteerID')
+    data = get_json_body()
+    if not isinstance(data, dict):
+        return error_response('请求参数格式错误', 400)
+
+    operator_id = data.get('operatorID')
     lost_item_id = data.get('lostItemID')
     found_item_id = data.get('foundItemID')
 
+    required_values = (operator_id, lost_item_id, found_item_id)
+    if any(value is None or (isinstance(value, str) and not value.strip()) for value in required_values):
+        return error_response('缺少必要参数', 400)
+    if any(isinstance(value, (dict, list)) for value in required_values):
+        return error_response('请求参数格式错误', 400)
+
     conn = get_db_connection()
-    if not conn: return jsonify({'success': False, 'message': '数据库连接失败'}), 500
+    if not conn: return error_response('数据库连接失败', 500)
     cursor = conn.cursor()
 
     try:
         cursor.execute('SELECT "UserRole" FROM "Users" WHERE "UserID" = %s', (operator_id,))
         operator = cursor.fetchone()
         if not operator:
-            return jsonify({'success': False, 'message': '无效的用户ID或未登录'}), 403
+            return error_response('无效的用户ID或未登录', 403)
+        if operator[0] not in ('志愿者', '管理员'):
+            return error_response('仅志愿者或管理员可以执行匹配操作', 403)
 
-        cursor.execute('SELECT "UserID", "ItemName" FROM "Items" WHERE "ItemID" = %s', (lost_item_id,))
+        cursor.execute('SELECT "UserID", "ItemName", "ItemType", "ItemStatus" FROM "Items" WHERE "ItemID" = %s', (lost_item_id,))
         lost_item_data = cursor.fetchone()
-        cursor.execute('SELECT "UserID", "ItemName" FROM "Items" WHERE "ItemID" = %s', (found_item_id,))
+        cursor.execute('SELECT "UserID", "ItemName", "ItemType", "ItemStatus" FROM "Items" WHERE "ItemID" = %s', (found_item_id,))
         found_item_data = cursor.fetchone()
 
         if not lost_item_data or not found_item_data:
-            return jsonify({'success': False, 'message': '物品不存在'}), 404
+            return error_response('物品不存在', 404)
 
-        lost_user_id, lost_item_name = lost_item_data
-        found_user_id, found_item_name = found_item_data
+        lost_user_id, lost_item_name, lost_item_type, lost_item_status = lost_item_data
+        found_user_id, found_item_name, found_item_type, found_item_status = found_item_data
+
+        if lost_item_type != 'Lost' or found_item_type != 'Found':
+            return error_response('物品类型不匹配，必须由失物和拾物组成', 400)
+        if lost_item_status != '未找到' or found_item_status != '未找到':
+            return error_response('只能匹配未找到状态的物品', 409)
 
         if lost_user_id == found_user_id:
-            return jsonify({'success': False, 'message': '不能匹配同一个用户发布的失物和拾物信息！'}), 400
+            return error_response('不能匹配同一个用户发布的失物和拾物信息！', 400)
 
         new_status = '正在联系中'
         cursor.execute('UPDATE "Items" SET "ItemStatus" = %s, "MatchItemID" = %s WHERE "ItemID" = %s', (new_status, found_item_id, lost_item_id))
