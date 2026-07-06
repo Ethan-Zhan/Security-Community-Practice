@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+
+# TensorFlow / model files
+*.h5
+*.ckpt
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+
+# Env
+.env
+
+# Logs
+*.log
