@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>手写数字分类安全推理平台</title>
+    <!-- 引入 Outfit 现代字型与 Bootstrap 样式 -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366F1;
+            --primary-glow: rgba(99, 102, 241, 0.15);
+            --emerald: #10B981;
+            --emerald-glow: rgba(16, 185, 129, 0.2);
+            --bg: #090D16;
+            --card-bg: rgba(17, 24, 39, 0.65);
+            --border: rgba(255, 255, 255, 0.07);
+            --text-title: #FFFFFF;
+            --text-body: #94A3B8;
+            --danger: #EF4444;
+            --danger-glow: rgba(239, 68, 68, 0.15);
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-title);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background-image: 
+                radial-gradient(circle at 10% 15%, rgba(99, 102, 241, 0.12) 0%, transparent 40%),
+                radial-gradient(circle at 90% 85%, rgba(16, 185, 129, 0.08) 0%, transparent 40%);
+            padding: 2.5rem 1rem;
+        }
+
+        /* 极简高雅头部 */
+        .header-section {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .brand-title {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 2.25rem;
+            letter-spacing: -0.03em;
+            background: linear-gradient(135deg, #C7D2FE 0%, #818CF8 50%, #34D399 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .brand-subtitle {
+            color: var(--text-body);
+            font-size: 0.95rem;
+            font-weight: 400;
+            letter-spacing: 0.02em;
+        }
+
+        /* 高级卡片 */
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2.25rem;
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card:hover {
+            border-color: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 20px 48px rgba(0, 0, 0, 0.5);
+        }
+
+        .section-header {
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            margin-bottom: 1.75rem;
+            display: flex;
+            align-items: center;
+            color: var(--text-title);
+        }
+
+        .section-header::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 16px;
+            background: var(--primary);
+            border-radius: 2px;
+            margin-right: 0.75rem;
+        }
+
+        /* 纯黑极简输入框 */
+        .input-group-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #64748B;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 0.5rem;
+        }
+
+        .clean-input {
+            background: rgba(10, 15, 26, 0.8);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-title) !important;
+            padding: 0.85rem 1rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .clean-input:focus {
+            background: #0A0F1A;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-glow);
+            outline: none;
+        }
+
+        /* 极简流线型上传区 */
+        .drop-area {
+            border: 1.5px dashed var(--border);
+            background: rgba(10, 15, 26, 0.3);
+            border-radius: 14px;
+            padding: 2.5rem 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            position: relative;
+        }
+
+        .drop-area:hover, .drop-area.drag-over {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.03);
+        }
+
+        .drop-icon {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 0.75rem;
+        }
+
+        .drop-text {
+            font-size: 0.85rem;
+            color: var(--text-body);
+            font-weight: 500;
+        }
+
+        .preview-img {
+            max-width: 100%;
+            max-height: 160px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            display: none;
+            margin: 0.5rem auto 0 auto;
+        }
+
+        /* 发送按钮 */
+        .btn-action {
+            background: var(--primary);
+            border: none;
+            color: #FFFFFF;
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 0.9rem;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 14px var(--primary-glow);
+        }
+
+        .btn-action:hover {
+            background: #5558DD;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        /* 优雅发光结果区 */
+        .result-container {
+            background: rgba(10, 15, 26, 0.4);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+            min-height: 220px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .digit-glow {
+            font-family: 'Outfit', sans-serif;
+            font-size: 5.5rem;
+            font-weight: 800;
+            line-height: 1;
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 15px var(--emerald-glow));
+            display: none;
+            margin-bottom: 0.5rem;
+        }
+
+        .digit-glow.intercepted {
+            background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 15px var(--danger-glow));
+        }
+
+        .status-badge {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--emerald);
+            display: none;
+            margin-bottom: 0.25rem;
+        }
+
+        .status-mode {
+            font-size: 0.75rem;
+            color: var(--text-body);
+            display: none;
+        }
+
+        .progress-track {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 3px;
+            width: 70%;
+            margin-top: 1rem;
+            overflow: hidden;
+            display: none;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--emerald);
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        /* 纯黑黑客风格终端 */
+        .terminal-panel {
+            background: #05070C;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 1rem;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.8rem;
+            height: 190px;
+            overflow-y: auto;
+            color: #E2E8F0;
+        }
+
+        .terminal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .terminal-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #64748B;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .btn-clear {
+            background: none;
+            border: none;
+            color: #64748B;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0;
+            transition: color 0.15s ease;
+        }
+
+        .btn-clear:hover {
+            color: var(--text-title);
+        }
+
+        .terminal-line {
+            margin-bottom: 0.35rem;
+            line-height: 1.4;
+            letter-spacing: -0.01em;
+        }
+
+        .t-time {
+            color: #475569;
+            margin-right: 0.5rem;
+        }
+
+        .t-success { color: var(--emerald); }
+        .t-warning { color: #FBBF24; }
+        .t-danger { color: var(--danger); }
+        .t-info { color: #38BDF8; }
+    </style>
+</head>
+<body>
+
+<div class="container py-3">
+    <!-- 极简头部 -->
+    <div class="header-section">
+        <h1 class="brand-title">Found In BUPT</h1>
+        <p class="brand-subtitle">手写数字识别安全推理控制台</p>
+    </div>
+
+    <!-- 卡片对称双栏布局 -->
+    <div class="row g-4 justify-content-center align-items-stretch">
+        <!-- 左侧：输入配置 -->
+        <div class="col-lg-5 d-flex">
+            <div class="glass-card w-100">
+                <div class="section-header">推理请求配置</div>
+                
+                <form id="upload-form" onsubmit="event.preventDefault();" class="d-flex flex-column h-100 justify-content-between">
+                    <!-- API Key -->
+                    <div class="mb-4">
+                        <div class="input-group-label">API 鉴权密钥 (Authorization Key)</div>
+                        <input type="text" id="apiKeyInput" class="form-control clean-input" placeholder="输入 Bearer Token" value="BUPT_SEC_2026_TEST_KEY">
+                    </div>
+
+                    <!-- 拖拽上传 -->
+                    <div class="mb-4 flex-grow-1 d-flex flex-column justify-content-center">
+                        <div class="input-group-label">手写图像源</div>
+                        <div class="drop-area" id="dropArea" onclick="document.getElementById('fileInput').click();">
+                            <div class="drop-icon">📥</div>
+                            <span class="drop-text d-block">拖拽手写数字图片至此，或点击浏览</span>
+                            <input type="file" id="fileInput" accept=".png,.jpg,.jpeg" style="display: none;">
+                            <img id="previewImage" class="preview-img mx-auto" alt="预览">
+                        </div>
+                    </div>
+
+                    <!-- 提交按钮 -->
+                    <button class="btn btn-action w-100" id="predictBtn" onclick="sendPrediction();">
+                        🔒 发送安全识别请求
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 右侧：审计与输出 -->
+        <div class="col-lg-5 d-flex">
+            <div class="glass-card w-100">
+                <div class="section-header">分析审计沙箱</div>
+                
+                <!-- 结果区 -->
+                <div class="result-container" id="resultContainer">
+                    <div class="text-center py-4" id="placeholderText" style="color: #475569;">
+                        <span class="d-block fs-3 mb-2">⏱️</span>
+                        <span style="font-size: 0.85rem; font-weight: 500;">等待图像载入安全审计...</span>
+                    </div>
+                    
+                    <div class="digit-glow" id="digitDisplay"></div>
+                    <div class="status-badge" id="resultStatus"></div>
+                    <div class="status-mode" id="resultMode"></div>
+                    
+                    <div class="progress-track" id="progressBar">
+                        <div class="progress-bar-fill" id="progressFill"></div>
+                    </div>
+                </div>
+
+                <!-- 黑客终端日志 -->
+                <div class="mt-4">
+                    <div class="terminal-header">
+                        <span class="terminal-title">安全事件追踪</span>
+                        <button class="btn-clear" onclick="clearLogs();">清空</button>
+                    </div>
+                    <div class="terminal-panel" id="terminalPanel">
+                        <div class="terminal-line t-info"><span class="t-time">[INIT]</span>安全审计沙箱已装载。</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const dropArea = document.getElementById('dropArea');
+    const fileInput = document.getElementById('fileInput');
+    const previewImage = document.getElementById('previewImage');
+    let activeFile = null;
+
+    // 拖拽事件
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropArea.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            dropArea.classList.add('drag-over');
+        }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            dropArea.classList.remove('drag-over');
+        }, false);
+    });
+
+    dropArea.addEventListener('drop', (e) => {
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleFileSelection(files[0]);
+        }
+    }, false);
+
+    fileInput.addEventListener('change', (e) => {
+        if (fileInput.files.length > 0) {
+            handleFileSelection(fileInput.files[0]);
+        }
+    });
+
+    function handleFileSelection(file) {
+        activeFile = file;
+        addLog(`载入源文件: "${file.name}" (${(file.size / 1024).toFixed(1)} KB)`, 'info');
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewImage.src = e.target.result;
+            previewImage.style.display = 'block';
+            document.querySelector('#dropArea .drop-icon').style.display = 'none';
+            document.querySelector('#dropArea .drop-text').style.display = 'none';
+        }
+        reader.readAsDataURL(file);
+    }
+
+    // 日志系统
+    function addLog(msg, type = 'info') {
+        const panel = document.getElementById('terminalPanel');
+        const time = new Date().toLocaleTimeString('zh-CN', { hour12: false });
+        const line = document.createElement('div');
+        line.className = `terminal-line t-${type}`;
+        line.innerHTML = `<span class="t-time">[${time}]</span> ${escapeHTML(msg)}`;
+        panel.appendChild(line);
+        panel.scrollTop = panel.scrollHeight;
+    }
+
+    function clearLogs() {
+        document.getElementById('terminalPanel').innerHTML = '';
+        addLog('沙箱日志清除成功。', 'info');
+    }
+
+    function escapeHTML(str) {
+        return str.replace(/[&<>'"]/g, 
+            t => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[t] || t)
+        );
+    }
+
+    // 图像识别发送
+    async function sendPrediction() {
+        if (!activeFile) {
+            alert('请先载入一张手写数字图片！');
+            addLog('拦截阻断: 请求缺少输入源图像。', 'warning');
+            return;
+        }
+
+        const apiKey = document.getElementById('apiKeyInput').value.trim();
+        addLog(`发起推理，校验 API 令牌: "${apiKey ? 'Bearer ******' : 'NULL'}"`, 'info');
+
+        const formData = new FormData();
+        formData.append('image', activeFile);
+
+        // 重置 UI
+        document.getElementById('placeholderText').style.display = 'block';
+        document.getElementById('digitDisplay').style.display = 'none';
+        document.getElementById('digitDisplay').classList.remove('intercepted');
+        document.getElementById('resultStatus').style.display = 'none';
+        document.getElementById('resultMode').style.display = 'none';
+        document.getElementById('progressBar').style.display = 'none';
+
+        try {
+            const response = await fetch('http://127.0.0.1:5000/api/predict', {
+                method: 'POST',
+                headers: {
+                    'Authorization': apiKey ? `Bearer ${apiKey}` : ''
+                },
+                body: formData
+            });
+
+            const data = await response.json();
+
+            document.getElementById('placeholderText').style.display = 'none';
+
+            if (response.ok && data.success) {
+                addLog(`✨ 审计通过。判定结果: ${data.predicted_digit} (置信度: ${(data.confidence * 100).toFixed(1)}%)`, 'success');
+                addLog(`[推理引擎] 当前运行模式: ${data.mode}`, 'info');
+
+                const digitDisplay = document.getElementById('digitDisplay');
+                digitDisplay.textContent = data.predicted_digit;
+                digitDisplay.style.display = 'block';
+
+                const statusEl = document.getElementById('resultStatus');
+                statusEl.textContent = `判定成功 (置信度: ${(data.confidence * 100).toFixed(1)}%)`;
+                statusEl.className = "status-badge text-success";
+                statusEl.style.display = 'block';
+
+                const modeEl = document.getElementById('resultMode');
+                modeEl.textContent = `推理模式: ${data.mode === 'REAL_CNN_INFERENCE' ? '深度神经网络' : '沙箱安全模拟'}`;
+                modeEl.style.display = 'block';
+
+                document.getElementById('progressBar').style.display = 'block';
+                document.getElementById('progressFill').style.width = `${data.confidence * 100}%`;
+                
+            } else {
+                addLog(`🛡️ 安全安检拦截！拦截状态: ${response.status}`, 'danger');
+                addLog(`[防御原因] [${data.error_type || 'SECURITY_ALERT'}] ${data.message}`, 'danger');
+                
+                const digitDisplay = document.getElementById('digitDisplay');
+                digitDisplay.textContent = '🛡️';
+                digitDisplay.classList.add('intercepted');
+                digitDisplay.style.display = 'block';
+
+                const statusEl = document.getElementById('resultStatus');
+                statusEl.textContent = '安全加固防御拦截';
+                statusEl.className = "status-badge text-danger";
+                statusEl.style.display = 'block';
+
+                const modeEl = document.getElementById('resultMode');
+                modeEl.textContent = `策略组: ${data.error_type || '防御阻断'}`;
+                modeEl.style.display = 'block';
+            }
+        } catch (err) {
+            addLog(`🚨 通信链路故障！请确认本地 Flask 安全 API 服务是否在运行。`, 'danger');
+            alert('无法建立与本地 Flask 安全 API 服务的连接，请确认 Python 服务已开启！');
+        }
+    }
+</script>
+</body>
+</html>
