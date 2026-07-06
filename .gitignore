@@ -1,0 +1,43 @@
+﻿# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Environment variables and secrets
+.env
+.env.*
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
+
+# Logs
+*.log
+logs/
+
+# Database and local runtime files
+*.sqlite
+*.sqlite3
+*.db
+
+# IDE and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Node dependencies and build output
+node_modules/
+dist/
+build/
+
+# Upload/temp files
+uploads/
+tmp/
+temp/
